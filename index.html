@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Domingo Randomizer PR</title>
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+}
+body{
+    min-height:100vh;
+    background:linear-gradient(180deg,#87CEEB 0%,#EAF8FF 100%);
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    color:#333;
+}
+.header{
+    width:100%;
+    text-align:center;
+    padding:25px 15px;
+    background:#87CEEB;
+    color:white;
+    font-size:2rem;
+    font-weight:900;
+    box-shadow:0 2px 12px rgba(0,0,0,.15);
+}
+.container{
+    width:100%;
+    max-width:500px;
+    padding:20px;
+}
+.wheel-container{
+    position:relative;
+    display:flex;
+    justify-content:center;
+    margin-top:15px;
+}
+.pointer{
+    position:absolute;
+    top:-10px;
+    z-index:10;
+    width:0;
+    height:0;
+    border-left:20px solid transparent;
+    border-right:20px solid transparent;
+    border-top:40px solid #ff3b30;
+}
+canvas{
+    width:100%;
+    max-width:420px;
+    border-radius:50%;
+    box-shadow:0 12px 30px rgba(0,0,0,.25);
+    background:white;
+}
+.controls{
+    text-align:center;
+}
+button{
+    border:none;
+    border-radius:30px;
+    padding:15px 28px;
+    font-size:1.1rem;
+    font-weight:700;
+    cursor:pointer;
+    margin-top:20px;
+}
+#spinBtn{
+    background:#007AFF;
+    color:white;
+}
+#retryBtn{
+    background:#34C759;
+    color:white;
+    display:none;
+    margin-left:10px;
+}
+.result-card{
+    margin-top:25px;
+    background:white;
+    border-radius:20px;
+    padding:20px;
+    box-shadow:0 8px 25px rgba(0,0,0,.12);
+    text-align:center;
+}
+.result{
+    font-size:1.5rem;
+    font-weight:800;
+}
+.quote{
+    margin-top:12px;
+    color:#666;
+    font-style:italic;
+}
+.activity-image{
+    margin-top:20px;
+}
+.activity-image img{
+    width:100%;
+    border-radius:18px;
+    box-shadow:0 6px 20px rgba(0,0,0,.15);
+}
+</style>
+</head>
+<body>
+<div class="header">
+    Hoy es domingo de...
+</div>
+<div class="container">
+<div class="wheel-container">
+    <div class="pointer"></div>
+    <canvas id="wheel" width="420" height="420"></canvas>
+</div>
+<div class="controls">
+    <button id="spinBtn">🎲 Girar Ruleta</button>
+    <button id="retryBtn">🔄 Volver a girar</button>
+</div>
+<div class="result-card">
+    <div id="result" class="result">
+        ¡Gira la ruleta!
+    </div>
+    <div id="quote" class="quote"></div>
+    <div id="activityImage" class="activity-image"></div>
+</div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+<script>
+const options = [
+    "🏖️ Día de Playa",
+    "🍽️ Probar restaurante",
+    "☕ Ir a un café",
+    "🌳 Explorar un bosque",
+    "🥾 Andar un sendero",
+    "📸 Ruta fotográfica",
+    "🏛️ Visitar un museo",
+    "🍻 Chinchorreo",
+    "🎁 Sorpresa Boricua"
+];
+const colors = [
+    "#FF6B6B",
+    "#FFD93D",
+    "#6BCB77",
+    "#4D96FF",
+    "#9D4EDD",
+    "#FF924C",
+    "#00C2A8",
+    "#F15BB5",
+    "#4361EE"
+];
+const surpriseActivities = [
+    "🏰 Visitar Viejo San Juan",
+    "🌅 Ver el atardecer en Piñones",
+    "🗼 Visitar un faro",
+    "☕ Probar una panadería nueva",
+    "🌊 Descubrir una playa nueva",
+    "💦 Ir a una cascada",
+    "🏞️ Explorar una plaza de pueblo"
+];
+const quotes = [
+    "La aventura comienza cuando sales de casa.",
+    "Los mejores domingos no se planifican demasiado.",
+    "Hoy toca crear recuerdos.",
+    "Puerto Rico tiene algo nuevo para mostrarte.",
+    "A veces el mejor plan es dejar que la suerte decida.",
+    "Haz algo que tu yo del futuro recuerde."
+];
+const images = {
+    "🏖️ Día de Playa":"https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=900",
+    "🍽️ Probar restaurante":"https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=900",
+    "☕ Ir a un café":"https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=900",
+    "🌳 Explorar un bosque":"https://images.unsplash.com/photo-1448375240586-882707db888b?w=900",
+    "🥾 Andar un sendero":"https://images.unsplash.com/photo-1551632811-561732d1e306?w=900",
+    "📸 Ruta fotográfica":"https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=900",
+    "🏛️ Visitar un museo":"https://images.unsplash.com/photo-1566127992631-137a642a90f4?w=900",
+    "🍻 Chinchorreo":"https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=900",
+    "🎁 Sorpresa Boricua":"https://images.unsplash.com/photo-1527631746610-bca00a040d60?w=900"
+};
+const canvas = document.getElementById("wheel");
+const ctx = canvas.getContext("2d");
+const spinBtn = document.getElementById("spinBtn");
+const retryBtn = document.getElementById("retryBtn");
+const resultEl = document.getElementById("result");
+const quoteEl = document.getElementById("quote");
+const imageEl = document.getElementById("activityImage");
+const arc = (2 * Math.PI) / options.length;
+let currentRotation = 0;
+let spinning = false;
+let retryUsed = false;
+function drawWheel(rotation=0){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    const cx = canvas.width/2;
+    const cy = canvas.height/2;
+    const radius = 195;
+    ctx.save();
+    ctx.translate(cx,cy);
+    ctx.rotate(rotation);
+    options.forEach((option,index)=>{
+        const angle = index * arc;
+        ctx.beginPath();
+        ctx.moveTo(0,0);
+        ctx.arc(0,0,radius,angle,angle+arc);
+        ctx.closePath();
+        ctx.fillStyle = colors[index];
+        ctx.fill();
+        ctx.strokeStyle = "#fff";
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        ctx.save();
+        ctx.rotate(angle + arc/2);
+        ctx.fillStyle = "#fff";
+        ctx.font = "bold 15px Arial";
+        ctx.textAlign = "right";
+        ctx.fillText(option,radius-15,5);
+        ctx.restore();
+    });
+    ctx.restore();
+    ctx.beginPath();
+    ctx.arc(cx,cy,22,0,Math.PI*2);
+    ctx.fillStyle="#333";
+    ctx.fill();
+}
+drawWheel();
+function showResult(activity){
+    let finalActivity = activity;
+    if(activity === "🎁 Sorpresa Boricua"){
+        finalActivity =
+            surpriseActivities[
+                Math.floor(Math.random()*surpriseActivities.length)
+            ];
+    }
+    resultEl.innerHTML =
+        `🎉 Hoy es domingo de:<br><br>${finalActivity}`;
+    quoteEl.textContent =
+        quotes[Math.floor(Math.random()*quotes.length)];
+    imageEl.innerHTML =
+        `<img src="${images[activity]}" alt="Actividad">`;
+    confetti({
+        particleCount:250,
+        spread:120,
+        origin:{y:0.6}
+    });
+    if(navigator.vibrate){
+        navigator.vibrate([300,100,300]);
+    }
+    if(!retryUsed){
+        retryBtn.style.display="inline-block";
+    }
+}
+spinBtn.addEventListener("click",()=>{
+    if(spinning) return;
+    spinning = true;
+    resultEl.textContent = "Girando...";
+    quoteEl.textContent = "";
+    imageEl.innerHTML = "";
+    const extraSpins = 5 + Math.random()*4;
+    const randomAngle = Math.random()*360;
+    const targetRotation =
+        currentRotation +
+        (extraSpins*360 + randomAngle) *
+        Math.PI/180;
+    const start = performance.now();
+    const duration = 5000;
+    function animate(now){
+        const elapsed = now - start;
+        const progress = Math.min(elapsed/duration,1);
+        const easeOut =
+            1 - Math.pow(1-progress,4);
+        const rotation =
+            currentRotation +
+            (targetRotation-currentRotation)
+            * easeOut;
+        drawWheel(rotation);
+        if(progress < 1){
+            requestAnimationFrame(animate);
+        }
+        else{
+            currentRotation = targetRotation;
+            const normalized =
+                (2*Math.PI -
+                (currentRotation % (2*Math.PI)))
+                % (2*Math.PI);
+            const selected =
+                Math.floor(normalized / arc)
+                % options.length;
+            showResult(options[selected]);
+            spinning = false;
+        }
+    }
+    requestAnimationFrame(animate);
+});
+retryBtn.addEventListener("click",()=>{
+    retryUsed = true;
+    retryBtn.style.display = "none";
+    spinBtn.click();
+});
+</script>
+</body>
+</html>
