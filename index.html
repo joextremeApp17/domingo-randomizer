@@ -20,14 +20,31 @@ body{
     color:#333;
 }
 .header{
-    width:100%;
-    text-align:center;
-    padding:25px 15px;
-    background:#87CEEB;
+    width:90%;
+    max-width:500px;
+
+    margin-top:20px;
+    margin-bottom:15px;
+
+    padding:25px;
+
+    background:linear-gradient(
+        135deg,
+        #2196F3,
+        #4FC3F7
+    );
+
+    border-radius:24px;
+
     color:white;
+
+    text-align:center;
+
     font-size:2rem;
     font-weight:900;
-    box-shadow:0 2px 12px rgba(0,0,0,.15);
+
+    box-shadow:
+        0 10px 25px rgba(0,0,0,.15);
 }
 .container{
     width:100%;
@@ -52,7 +69,7 @@ body{
 }
 canvas{
     width:100%;
-    max-width:420px;
+    max-width:460px;
     border-radius:50%;
     box-shadow:0 12px 30px rgba(0,0,0,.25);
     background:white;
@@ -101,6 +118,9 @@ button{
 }
 .activity-image img{
     width:100%;
+    max-height:220px;
+    object-fit:cover;
+
     border-radius:18px;
     box-shadow:0 6px 20px rgba(0,0,0,.15);
 }
@@ -108,12 +128,12 @@ button{
 </head>
 <body>
 <div class="header">
-    Hoy es domingo de...
+✨ Hoy es domingo de... ✨
 </div>
 <div class="container">
 <div class="wheel-container">
     <div class="pointer"></div>
-    <canvas id="wheel" width="420" height="420"></canvas>
+    <canvas id="wheel" width="460" height="460"></canvas>
 </div>
 <div class="controls">
     <button id="spinBtn">🎲 Girar Ruleta</button>
@@ -212,9 +232,41 @@ function drawWheel(rotation=0){
         ctx.save();
         ctx.rotate(angle + arc/2);
         ctx.fillStyle = "#fff";
-        ctx.font = "bold 15px Arial";
-        ctx.textAlign = "right";
-        ctx.fillText(option,radius-15,5);
+       ctx.font = "bold 18px Arial";
+       ctx.textAlign = "center";
+
+const cleanText = option
+.replace("🏖️","")
+.replace("🍽️","")
+.replace("☕","")
+.replace("🌳","")
+.replace("🥾","")
+.replace("📸","")
+.replace("🏛️","")
+.replace("🍻","")
+.replace("🎁","")
+.trim();
+
+const words = cleanText.split(" ");
+
+if(words.length > 2){
+
+    const first =
+        words.slice(0,2).join(" ");
+
+    const second =
+        words.slice(2).join(" ");
+
+    ctx.fillText(first, radius-75, -8);
+    ctx.fillText(second, radius-75, 15);
+}
+else{
+    ctx.fillText(
+        cleanText,
+        radius-75,
+        5
+    );
+}
         ctx.restore();
     });
     ctx.restore();
@@ -279,13 +331,22 @@ spinBtn.addEventListener("click",()=>{
         }
         else{
             currentRotation = targetRotation;
-            const normalized =
-                (2*Math.PI -
-                (currentRotation % (2*Math.PI)))
-                % (2*Math.PI);
-            const selected =
-                Math.floor(normalized / arc)
-                % options.length;
+            const degrees =
+(
+(currentRotation * 180 / Math.PI)
+% 360
++ 360
+) % 360;
+
+const segmentSize =
+360 / options.length;
+
+const selected =
+Math.floor(
+((360 - degrees) % 360)
+/
+segmentSize
+) % options.length;
             showResult(options[selected]);
             spinning = false;
         }
