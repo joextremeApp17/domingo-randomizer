@@ -285,7 +285,20 @@ function showResult(activity){
             ];
     }
     resultEl.innerHTML =
-        `🎉 Hoy es domingo de:<br><br>${finalActivity}`;
+`
+🎉 Hoy es domingo de:
+
+<br><br>
+
+<span style="
+font-size:2.4rem;
+display:block;
+margin-top:10px;
+color:#5B21B6;
+">
+${finalActivity}
+</span>
+`;
     quoteEl.textContent =
         quotes[Math.floor(Math.random()*quotes.length)];
     imageEl.innerHTML =
@@ -302,57 +315,78 @@ function showResult(activity){
         retryBtn.style.display="inline-block";
     }
 }
-spinBtn.addEventListener("click",()=>{
-    if(spinning) return;
-    spinning = true;
-    resultEl.textContent = "Girando...";
-    quoteEl.textContent = "";
-    imageEl.innerHTML = "";
-    const extraSpins = 5 + Math.random()*4;
-    const randomAngle = Math.random()*360;
-    const targetRotation =
-        currentRotation +
-        (extraSpins*360 + randomAngle) *
-        Math.PI/180;
-    const start = performance.now();
-    const duration = 5000;
-    function animate(now){
-        const elapsed = now - start;
-        const progress = Math.min(elapsed/duration,1);
-        const easeOut =
-            1 - Math.pow(1-progress,4);
-        const rotation =
-            currentRotation +
-            (targetRotation-currentRotation)
-            * easeOut;
-        drawWheel(rotation);
-        if(progress < 1){
-            requestAnimationFrame(animate);
-        }
-        else{
-            currentRotation = targetRotation;
-            const degrees =
-(
-(currentRotation * 180 / Math.PI)
-% 360
-+ 360
-) % 360;
 
-const segmentSize =
-360 / options.length;
+spinBtn.addEventListener(“click”,()=>{
 
-const selected =
-Math.floor(
-((360 - degrees) % 360)
-/
-segmentSize
-) % options.length;
-            showResult(options[selected]);
-            spinning = false;
-        }
+if(spinning) return;
+spinning = true;
+resultEl.innerHTML = "🎲 Girando...";
+quoteEl.textContent = "";
+imageEl.innerHTML = "";
+const winnerIndex =
+    Math.floor(
+        Math.random() * options.length
+    );
+const segmentAngle =
+    360 / options.length;
+const extraSpins =
+    5 + Math.floor(Math.random()*3);
+const targetDegrees =
+    (extraSpins * 360)
+    +
+    (360 - (
+        winnerIndex * segmentAngle
+        +
+        segmentAngle/2
+    ));
+const targetRotation =
+    targetDegrees *
+    Math.PI / 180;
+const start = performance.now();
+const startRotation =
+    currentRotation;
+const duration = 5000;
+function animate(now){
+    const elapsed =
+        now - start;
+    const progress =
+        Math.min(
+            elapsed / duration,
+            1
+        );
+    const easeOut =
+        1 - Math.pow(
+            1 - progress,
+            4
+        );
+    const rotation =
+        startRotation +
+        (
+            targetRotation
+            -
+            startRotation
+        )
+        * easeOut;
+    drawWheel(rotation);
+    if(progress < 1){
+        requestAnimationFrame(
+            animate
+        );
+    } else {
+        currentRotation =
+            targetRotation;
+        showResult(
+            options[winnerIndex]
+        );
+        spinning = false;
     }
-    requestAnimationFrame(animate);
+}
+requestAnimationFrame(
+    animate
+);
+
 });
+
 retryBtn.addEventListener("click",()=>{
     retryUsed = true;
     retryBtn.style.display = "none";
