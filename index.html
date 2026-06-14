@@ -316,7 +316,7 @@ ${finalActivity}
     }
 }
 
-spinBtn.addEventListener(“click”,()=>{
+spinBtn.addEventListener("click",()=>{
 
 if(spinning) return;
 spinning = true;
@@ -334,14 +334,20 @@ const extraSpins =
 const targetDegrees =
     (extraSpins * 360)
     +
-    (360 - (
-        winnerIndex * segmentAngle
-        +
-        segmentAngle/2
-    ));
+    (
+        360 -
+        (
+            winnerIndex * segmentAngle +
+            segmentAngle / 2
+        )
+    )
+    - 90;
 const targetRotation =
-    targetDegrees *
-    Math.PI / 180;
+    currentRotation +
+    (
+        targetDegrees *
+        Math.PI / 180
+    );
 const start = performance.now();
 const startRotation =
     currentRotation;
